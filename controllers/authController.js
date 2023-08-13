@@ -1,5 +1,8 @@
 const userModel = require("../models/userModel");
-const { hashPassword } = require("../helpers/authHelper");
+const { hashPassword, comparePassword } = require("../helpers/authHelper");
+const JWT = require("jsonwebtoken");
+
+//post register
 const registerController = async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
@@ -32,15 +35,13 @@ const registerController = async (req, res) => {
     }
     //register user
     const hashedPassword = await hashPassword(password);
-console.log('hashPassword',hashedPassword)
-
     //save
     const user = await new userModel({
       name,
       email,
       phone,
       address,
-      password:hashedPassword,
+      password: hashedPassword,
     }).save();
 
     res.status(201).send({
@@ -48,7 +49,6 @@ console.log('hashPassword',hashedPassword)
       message: "User Register Successfully",
       user,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -59,4 +59,66 @@ console.log('hashPassword',hashedPassword)
   }
 };
 
-module.exports = registerController;
+//post login
+const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    //validation
+    if (!email || !password) {
+      return res.status(400).send({
+        success: false,
+        message: "email and password invalid",
+      });
+    }
+
+    const user = await  userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).send({
+        success: false,
+        message: "email is invalid",
+      });
+    }
+
+    const match = await comparePassword(password, user.password);
+    if (!match) {
+      return res.status(404).send({
+        success: false,
+        message: "password  is invalid",
+      });
+    }
+    //token
+    const token = JWT.sign({ _id: user._id },process.env.JWT_SECRECT,{expiresIn: "2h",});
+    res.status(200).send({
+      success: true,
+      message: "login successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+      },
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in Login",
+      error,
+    });
+  }
+};
+
+//get data 
+
+const getController=async(req,res)=>{
+  // const user = await  userModel.findOne({ role });
+
+
+  res.send(' middleware apply successfully ')
+}
+
+module.exports = { registerController, loginController,getController };
