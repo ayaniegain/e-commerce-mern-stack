@@ -5,7 +5,6 @@ const morgan = require("morgan");
 const cors = require("cors");
 const connectDB =require ('./config/db.js');
 const authRoutes =require ('./routes/authRoute.js');
-cors
 
 
 //config env

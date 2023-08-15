@@ -26,38 +26,40 @@ const registerController = async (req, res) => {
     //   return res.send({ message: "Answer is Required" });
     // }
     //check user
-    const existinguser = await userModel.findOne({ email });
-    if (existinguser) {
-      return res.status(200).send({
+    const exisitingUser = await userModel.findOne({ email });
+   
+       //exisiting user
+       if (exisitingUser) {
+        return res.status(200).send({
+          success: false,
+          message: "Already Register please login",
+        });
+      }
+      //register user
+      const hashedPassword = await hashPassword(password);
+      //save
+      const user = await new userModel({
+        name,
+        email,
+        phone,
+        address,
+        password: hashedPassword,
+      }).save();
+  
+      res.status(201).send({
         success: true,
-        message: "Already Registerd please login",
+        message: "User Register Successfully",
+        user,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        success: false,
+        message: "Errro in Registeration",
+        error,
       });
     }
-    //register user
-    const hashedPassword = await hashPassword(password);
-    //save
-    const user = await new userModel({
-      name,
-      email,
-      phone,
-      address,
-      password: hashedPassword,
-    }).save();
-
-    res.status(201).send({
-      success: true,
-      message: "User Register Successfully",
-      user,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error in Registation",
-      error,
-    });
-  }
-};
+  };
 
 //post login
 const loginController = async (req, res) => {
