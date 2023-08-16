@@ -117,9 +117,6 @@ const loginController = async (req, res) => {
 //get data 
 
 const getController=async(req,res)=>{
-  // const user = await  userModel.findOne({ role });
-
-
   res.send(' middleware apply successfully ')
 }
 
